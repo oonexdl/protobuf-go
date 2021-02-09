@@ -419,9 +419,15 @@ func genMessageField(g *protogen.GeneratedFile, f *fileInfo, m *messageInfo, fie
 	g.Annotate(m.GoIdent.GoName+"."+name, field.Location)
 	leadingComments := appendDeprecationSuffix(field.Comments.Leading,
 		field.Desc.Options().(*descriptorpb.FieldOptions).GetDeprecated())
+	if tc := trailingComment(field.Comments.Trailing).String(); tc != "" {
+		if validationTag := strings.TrimLeft(strings.TrimLeft(tc, "//"), " "); validationTag != "" {
+			tags = append(tags, structTags{
+				{"validate", validationTag},
+			}...)
+		}
+	}
 	g.P(leadingComments,
-		name, " ", goType, tags,
-		trailingComment(field.Comments.Trailing))
+		name, " ", goType, tags)
 	sf.append(field.GoName)
 }
 
